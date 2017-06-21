@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import math
 import sys
 from enum import Enum
 
@@ -14,18 +15,10 @@ class Operator:
 		return 0
 
 # lower to higher priority
-# operators = [
-# 	[Operator('-', lambda x, y: x - y, True), Operator('+', lambda x, y: x + y, True)],
-# 	[Operator('/', lambda x, y: x / y, True), Operator('*', lambda x, y: x * y, True)],
-# 	[Operator('^', lambda x, y: x ^ y, False)]
-# ]
-
 operators = [
-	Operator('-', lambda x, y: x - y, True), 
-	Operator('+', lambda x, y: x + y, True),
-	Operator('/', lambda x, y: x / y, True), 
-	Operator('*', lambda x, y: x * y, True),
-	Operator('^', lambda x, y: x ^ y, False)
+	[Operator('-', lambda x, y: x - y, True), Operator('+', lambda x, y: x + y, True)],
+	[Operator('/', lambda x, y: x / y, True), Operator('*', lambda x, y: x * y, True)],
+	[Operator('^', lambda x, y: math.pow(x, y), False)]
 ]
 
 # Exp ::= Num | ( Exp ) | - Exp | Exp BinOp Exp
@@ -103,39 +96,37 @@ def evaluateUnary(tokens):
 	b = [tokens[i+1]]
 	c = tokens[i+2:]
 
-	d = a + [Token("num", -evaluate(b))] + c
-
-	print("UNARY INPUT: ", d)
-	result = evaluate(d)
-	print("UNARY OUTPUT: ", result)
-
-	return result
+	return evaluate(a + [Token("num", -evaluate(b))] + c)
 
 def evaluateOperation(tokens):
 	
 	oper = None
-	for op in operators:
+	for ops in operators:
+		
 		i = len(tokens) - 1
 		while i >= 0:
-			token = tokens[i]
-			if token.kind == "oper" and token.value == op.char:
-				oper = op
-				break
-			i -= 1
-		if oper != None:
-			break
 
-	if oper == None or i <= 0 or i >= len(tokens) - 1:
+			for op in ops:
+
+				token = tokens[i]
+				if token.kind == "oper" and token.value == op.char:
+					oper = op
+					break
+			if oper != None: break
+			i -= 1
+		if oper != None: break
+
+	if oper == None:
 		return None
+
+	if i <= 0 or i >= len(tokens) - 1:
+		raise Exception("Expression error.")
 
 	a = tokens[:i]
 	b = tokens[i+1:]
 
-	print("--")
-	print("OPER ", a, " (", oper.char, ") ", b, " = ", oper.evalfunc(evaluate(a), evaluate(b)))
-
-	result = oper.evalfunc(evaluate(a), evaluate(b))
-	print("OUTPUT = ", result)
+	return oper.evalfunc(evaluate(a), evaluate(b))
+	
 	return result
 
 def decode(tokens):
@@ -221,7 +212,7 @@ class Lexer:
 					token = Token("block", str(c))
 
 				# scan operations
-				elif c in ['+', '-', '*', '/']:
+				elif c in ['+', '-', '*', '/', '^']:
 					token = Token("oper", str(c))
 
 				# ignores empty space
