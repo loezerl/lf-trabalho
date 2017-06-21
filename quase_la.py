@@ -90,28 +90,25 @@ def evaluateUnary(tokens):
 	b = [tokens[i+1]]
 	c = tokens[i+2:]
 
-	print "-- UNARY AT ", i
-	print "TOKENS = ", tokens
-	print "A = ", a
-	print "B = ", b
-	print "C = ", c
-
 	d = a + [Token("num", -evaluate(b))] + c
-	
-	print "D = ", d
 
-	return evaluate(d)
+	print "UNARY INPUT: ", d
+	result = evaluate(d)
+	print "UNARY OUTPUT: ", result
+
+	return result
 
 def evaluateOperation(tokens):
 	
 	oper = None
 	for op in operators:
-		i = 0
-		for token in tokens:
+		i = len(tokens) - 1
+		while i >= 0:
+			token = tokens[i]
 			if token.kind == "oper" and token.value == op.char:
 				oper = op
 				break
-			i += 1
+			i -= 1
 		if oper != None:
 			break
 
@@ -121,7 +118,12 @@ def evaluateOperation(tokens):
 	a = tokens[:i]
 	b = tokens[i+1:]
 
-	return oper.evalfunc(evaluate(a), evaluate(b))
+	print "--"
+	print "OPER ", a, " (", oper.char, ") ", b, " = ", oper.evalfunc(evaluate(a), evaluate(b))
+
+	result = oper.evalfunc(evaluate(a), evaluate(b))
+	print "OUTPUT = ", result
+	return result
 
 def decode(tokens):
 
@@ -131,8 +133,6 @@ def decode(tokens):
 	return text
 
 def evaluate(tokens):
-
-	print decode(tokens)
 
 	err = Exception("Could not evaluate tokens: ", tokens)
 
