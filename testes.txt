@@ -1,5 +1,10 @@
-11--2*-137									=> -283
+11--2*-137									=> -263
 2--3-6										=> -1
 1 + 2 * 3 * ( 7 * 8 ) - ( 45 - 10 ) 		=> 302
 11 - -2 * -3 * ( 17 * 81 ) - ( -45 - 10 ) 	=> -8196
 -1 + -2 * 13 * ( 7 * 8 ) - ( 415 - 0.1 )	=> -1871
+
+Lista de Testes do Loezer (que não deram certo)
+2 * 2 - 2  //Hmmm o parser separa os numeros se tiver espaco neh hehe ai da erro na hora do parser de argumentos
+Vou ignorar o problema com espaços:
+2-0.1 => 1.9 //qualquer operacao com ponto ta dando problema
