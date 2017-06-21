@@ -92,9 +92,9 @@ def evaluateUnary(tokens):
 
 	d = a + [Token("num", -evaluate(b))] + c
 
-	print "UNARY INPUT: ", d
+	print("UNARY INPUT: ", d)
 	result = evaluate(d)
-	print "UNARY OUTPUT: ", result
+	print("UNARY OUTPUT: ", result)
 
 	return result
 
@@ -118,11 +118,11 @@ def evaluateOperation(tokens):
 	a = tokens[:i]
 	b = tokens[i+1:]
 
-	print "--"
-	print "OPER ", a, " (", oper.char, ") ", b, " = ", oper.evalfunc(evaluate(a), evaluate(b))
+	print("--")
+	print("OPER ", a, " (", oper.char, ") ", b, " = ", oper.evalfunc(evaluate(a), evaluate(b)))
 
 	result = oper.evalfunc(evaluate(a), evaluate(b))
-	print "OUTPUT = ", result
+	print("OUTPUT = ", result)
 	return result
 
 def decode(tokens):
@@ -188,7 +188,7 @@ class Lexer:
 			elif c in ['+', '-', '*', '/']:
 				token = Token("oper", str(c))
 			elif c != ' ' and c != '\t':
-				print "Could not interpret character '" + c + "' at column " + str(i)
+				print("Could not interpret character '" + c + "' at column " + str(i))
 				return None
 
 			if token != None:
@@ -203,9 +203,9 @@ if len(sys.argv) != 2:
 	sys.exit(0)
 
 expressao = sys.argv[1]
-print "Expressão: \"" + expressao + "\""
+print("Expressão: \"" + expressao + "\"")
 
 tokens = Lexer.scan(expressao)
 result = evaluate(tokens)
-print "Resultado: ", result
+print("Resultado: ", result)
 
