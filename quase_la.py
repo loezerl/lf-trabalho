@@ -74,12 +74,33 @@ def evaluateParenthesis(tokens):
 def evaluateUnary(tokens):
 
 	i = 0
-	for token in tokens:
-		if token.kind == "oper" and token.value == "-": break
+	while i < len(tokens):
+		token = tokens[i]
+
+		if token.kind == "oper" and token.value == "-" and \
+		   	(i == 0 or tokens[i-1].kind != "num") and tokens[i+1].kind == "num":
+			break
+
 		i += 1
 
-	if i >= len(tokens): return None
-	return evaluate(tokens[:i] + [Token("num", -evaluate(tokens[i+1:]))])
+	if i >= len(tokens):
+		return None
+
+	a = tokens[:i]
+	b = [tokens[i+1]]
+	c = tokens[i+2:]
+
+	print "-- UNARY AT ", i
+	print "TOKENS = ", tokens
+	print "A = ", a
+	print "B = ", b
+	print "C = ", c
+
+	d = a + [Token("num", -evaluate(b))] + c
+	
+	print "D = ", d
+
+	return evaluate(d)
 
 def evaluateOperation(tokens):
 	
@@ -97,19 +118,21 @@ def evaluateOperation(tokens):
 	if oper == None or i <= 0 or i >= len(tokens) - 1:
 		return None
 
-	a = tokens[0:i]
+	a = tokens[:i]
 	b = tokens[i+1:]
-
-	print "--"
-	print "OPER = ", oper.char
-	print "RECEBE: ", tokens
-	print "A: ", a
-	print "B", b
 
 	return oper.evalfunc(evaluate(a), evaluate(b))
 
+def decode(tokens):
+
+	text = ""
+	for token in tokens:
+		text += str(token.value)
+	return text
 
 def evaluate(tokens):
+
+	print decode(tokens)
 
 	err = Exception("Could not evaluate tokens: ", tokens)
 
@@ -122,11 +145,10 @@ def evaluate(tokens):
 	result = evaluateParenthesis(tokens)
 	if result != None: return result		
 
-	result = evaluateOperation(tokens)
-	if result != None: return result
-
 	result = evaluateUnary(tokens)
+	if result != None: return result
 	
+	result = evaluateOperation(tokens)
 	if result == None:
 		raise err
 
@@ -186,6 +208,4 @@ print "Expressão: \"" + expressao + "\""
 tokens = Lexer.scan(expressao)
 result = evaluate(tokens)
 print "Resultado: ", result
-
-
 
