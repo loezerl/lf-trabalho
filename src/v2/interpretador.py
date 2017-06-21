@@ -1,23 +1,36 @@
 # -*- coding: utf-8 -*-
 
 import sys
+from enum import Enum
 
 class Operator:
 
-	def __init__(self, char, evalfunc):
+	def __init__(self, char, evalfunc, assocLeft):
 		self.char = char
 		self.evalfunc = evalfunc
+		self.assocLeft = assocLeft
 
 	def evaluate(self, num1, num2):
 		return 0
 
 # lower to higher priority
+# operators = [
+# 	[Operator('-', lambda x, y: x - y, True), Operator('+', lambda x, y: x + y, True)],
+# 	[Operator('/', lambda x, y: x / y, True), Operator('*', lambda x, y: x * y, True)],
+# 	[Operator('^', lambda x, y: x ^ y, False)]
+# ]
+
 operators = [
-	Operator('-', lambda x, y: x - y),
-	Operator('+', lambda x, y: x + y),
-	Operator('/', lambda x, y: x / y),
-	Operator('*', lambda x, y: x * y)
+	Operator('-', lambda x, y: x - y, True), 
+	Operator('+', lambda x, y: x + y, True),
+	Operator('/', lambda x, y: x / y, True), 
+	Operator('*', lambda x, y: x * y, True),
+	Operator('^', lambda x, y: x ^ y, False)
 ]
+
+# Exp ::= Num | ( Exp ) | - Exp | Exp BinOp Exp
+# Num ::= [0-9]+([.][0-9]+)?
+# BinOp ::= + | - | * | / | ^
 
 class Token:
 	
@@ -162,39 +175,69 @@ class Lexer:
 	@staticmethod
 	def scan(exp):
 
+		i = 0
 		tokens = []
 
-		i = 0
-		while i < len(exp):
+		try:	
+			while i < len(exp):
 
-			c = exp[i]
-			token = None
+				c = exp[i]
+				token = None
 
-			if c >= '0' and c <= '9':
-				
-				numstr = ""
-				while is_num(c) and i < len(exp):
-					numstr += c
-					i += 1
+				# scan number
+				if is_num(c):
+					
+					numstr = ""
+					while is_num(c) and i < len(exp):
+						numstr += c
+						i += 1
 
-					if i != len(exp):
+						if i != len(exp):
+							c = exp[i]
+
+					# scan floating number
+					if c == '.':
+
+						if i >= len(exp) - 1 or not is_num(exp[i + 1]):
+							raise Exception()
+
+						numstr += '.'
+
+						i += 1
 						c = exp[i]
-				
-				i -= 1
 
-				token = Token("num", int(numstr))
-			elif c in ['(', ')']:
-				token = Token("block", str(c))
-			elif c in ['+', '-', '*', '/']:
-				token = Token("oper", str(c))
-			elif c != ' ' and c != '\t':
-				print("Could not interpret character '" + c + "' at column " + str(i))
-				return None
+						while is_num(c) and i < len(exp):
+							numstr += c
+							i += 1
 
-			if token != None:
-				tokens.append(token)
+							if i != len(exp):
+								c = exp[i]
+					
+					i -= 1
+					token = Token("num", float(numstr))
 
-			i += 1
+				# scan parenthesis
+				elif c in ['(', ')']:
+					token = Token("block", str(c))
+
+				# scan operations
+				elif c in ['+', '-', '*', '/']:
+					token = Token("oper", str(c))
+
+				# ignores empty space
+				elif c != ' ' and c != '\t':
+					raise Exception()
+
+				if token != None:
+					tokens.append(token)
+
+				i += 1
+		
+		except Exception:
+			print ("### Expression error near column", i)
+			print (exp)
+			print (" " * i + "^")
+			return None
 
 		return tokens
 
@@ -203,9 +246,9 @@ if len(sys.argv) != 2:
 	sys.exit(0)
 
 expressao = sys.argv[1]
-print("Expressão: \"" + expressao + "\"")
-
 tokens = Lexer.scan(expressao)
-result = evaluate(tokens)
-print("Resultado: ", result)
+
+if tokens != None:
+	result = evaluate(tokens)
+	print("Resultado: ", result)
 
