@@ -4,21 +4,26 @@ import math
 import sys
 from enum import Enum
 
+class OperatorSet:
+
+	def __init__(self, operators, assocLeft):
+		self.operators = operators
+		self.assocLeft = assocLeft
+
 class Operator:
 
-	def __init__(self, char, evalfunc, assocLeft):
+	def __init__(self, char, evalfunc):
 		self.char = char
 		self.evalfunc = evalfunc
-		self.assocLeft = assocLeft
 
 	def evaluate(self, num1, num2):
 		return 0
 
 # lower to higher priority
 operators = [
-	[Operator('-', lambda x, y: x - y, True), Operator('+', lambda x, y: x + y, True)],
-	[Operator('/', lambda x, y: x / y, True), Operator('*', lambda x, y: x * y, True)],
-	[Operator('^', lambda x, y: math.pow(x, y), False)]
+	OperatorSet([Operator('-', lambda x, y: x - y), Operator('+', lambda x, y: x + y)], True),
+	OperatorSet([Operator('/', lambda x, y: x / y), Operator('*', lambda x, y: x * y)], True),
+	OperatorSet([Operator('^', lambda x, y: math.pow(x, y))], False)
 ]
 
 # Exp ::= Num | ( Exp ) | - Exp | Exp BinOp Exp
@@ -99,21 +104,27 @@ def evaluateUnary(tokens):
 	return evaluate(a + [Token("num", -evaluate(b))] + c)
 
 def evaluateOperation(tokens):
-	
-	oper = None
-	for ops in operators:
-		
-		i = len(tokens) - 1
-		while i >= 0:
 
-			for op in ops:
+	oper = None
+	for opset in operators:
+		
+		inc = 1
+		i = 0
+
+		if opset.assocLeft: 
+			inc = -1
+			i = len(tokens) - 1
+
+		while (opset.assocLeft and i >= 0) or (not opset.assocLeft and i < len(tokens)):
+
+			for op in opset.operators:
 
 				token = tokens[i]
 				if token.kind == "oper" and token.value == op.char:
 					oper = op
 					break
 			if oper != None: break
-			i -= 1
+			i += inc
 		if oper != None: break
 
 	if oper == None:
