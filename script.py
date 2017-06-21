@@ -162,11 +162,11 @@ def calc1(lista):
         if(token[0] == 'Op'):
             if(token[1] == '+'):
                 if(lista[i-1][0] == 'Num'):
-                    num1 = int(lista[i-1][1])
+                    num1 = float(lista[i-1][1])
                 else:
                     print("erro")
                 if(lista[i+1][0] == 'Num'):
-                    num2 = int(lista[i+1][1])
+                    num2 = float(lista[i+1][1])
                 else:
                     print("erro")
                 resul = soma(num1, num2)
@@ -177,11 +177,11 @@ def calc1(lista):
                 calc1(lista)
             if(token[1] == '-'):
                 if(lista[i-1][0] == 'Num'):
-                    num1 = int(lista[i-1][1])
+                    num1 = float(lista[i-1][1])
                 else:
                     print("erro")
                 if(lista[i+1][0] == 'Num'):
-                    num2 = int(lista[i+1][1])
+                    num2 = float(lista[i+1][1])
                 else:
                     print("erro")
                 resul = subtracao(num1, num2)
@@ -194,18 +194,19 @@ def calc1(lista):
             calc2(lista)
         i = i + 1
 
+
 def calc2(lista):
     i=0
     for valor in lista:
-        token = valor[0]
-        if(token == 'Op'):
+        token = valor
+        if(token[0] == 'Op'):
             if(token[1] == '*'):
                 if(lista[i-1][0] == 'Num'):
-                    num1 = int(lista[i-1][1])
+                    num1 = float(lista[i-1][1])
                 else:
                     print("erro")
                 if(lista[i+1][0] == 'Num'):
-                    num2 = int(lista[i+1][1])
+                    num2 = float(lista[i+1][1])
                 else:
                     print("erro")
                 resul = multiplicacao(num1, num2)
@@ -216,11 +217,11 @@ def calc2(lista):
                 calc2(lista)
             if(token[1] == '/'):
                 if(lista[i-1][0] == 'Num'):
-                    num1 = int(lista[i-1][1])
+                    num1 = float(lista[i-1][1])
                 else:
                     print("erro")
                 if(lista[i+1][0] == 'Num'):
-                    num2 = int(lista[i+1][1])
+                    num2 = float(lista[i+1][1])
                 else:
                     print("erro")
                 resul = divisao(num1, num2)
@@ -232,19 +233,20 @@ def calc2(lista):
         else:
             calc3(lista)
         i = i + 1
+    return lista
 
 def calc3(lista):
     i=0
     for valor in lista:
-        token = valor[0]
-        if(token == 'Op'):
+        token = valor
+        if(token[0] == 'Op'):
             if(token[1] == '^'):
                 if(lista[i-1][0] == 'Num'):
-                    num1 = int(lista[i-1][1])
+                    num1 = float(lista[i-1][1])
                 else:
                     print("erro")
                 if(lista[i+1][0] == 'Num'):
-                    num2 = int(lista[i+1][1])
+                    num2 = float(lista[i+1][1])
                 else:
                     print("erro")
                 resul = potencia(num1, num2)
@@ -254,9 +256,13 @@ def calc3(lista):
                 lista.insert((i-1),['Num', resul])
                 calc3(lista)
         i = i + 1
-    return lista
+    lista2 = lista
+    print(lista2)
+    return lista2
 expressao  = input("Digite a expressao")
 
 lista1 = tokens(expressao)
 valida(lista1)
+calc1(lista1)
+print(lista1)
 '''print(lista)'''
