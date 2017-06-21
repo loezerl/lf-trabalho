@@ -4,6 +4,17 @@ import math
 import sys
 from enum import Enum
 
+class TokenizerException(Exception):
+	def __init__(self, expression, position):
+		super().__init__()
+		self.expression = expression
+		self.position = position
+
+class ParseTokenException(Exception):
+	def __init__(self, token):
+		super().__init__()
+		self.token = token
+
 class OperatorSet:
 
 	def __init__(self, operators, assocLeft):
@@ -34,6 +45,7 @@ class Token:
 	
 	kind = ""
 	value = None
+	position = 0
 
 	def __init__(self, kind, value):
 		self.kind = kind
@@ -54,7 +66,10 @@ def evaluateParenthesis(tokens):
 	
 	i = 0
 	for token in tokens:
-		if token.kind == "block" and token.value == "(": break
+		if token.kind == "block":
+			if token.value == "(": break
+			elif token.value == ")":
+				raise ParseTokenException(token)
 		i += 1
 
 	if i >= len(tokens):
@@ -74,11 +89,14 @@ def evaluateParenthesis(tokens):
 		end += 1
 
 	if count != 0:
-		return None
+		raise ParseTokenException(tokens[start])
 
 	a = tokens[:start]
 	b = tokens[start+1:end]
 	c = tokens[end+1:]
+
+	if len(b) == 0:
+		raise ParseTokenException(tokens[start+1])
 
 	return evaluate(a + [Token("num", evaluate(b))] + c)
 
@@ -86,8 +104,8 @@ def evaluateUnary(tokens):
 
 	i = 0
 	while i < len(tokens):
+		
 		token = tokens[i]
-
 		if token.kind == "oper" and token.value == "-" and \
 		   	(i == 0 or tokens[i-1].kind != "num") and tokens[i+1].kind == "num":
 			break
@@ -130,15 +148,13 @@ def evaluateOperation(tokens):
 	if oper == None:
 		return None
 
-	if i <= 0 or i >= len(tokens) - 1:
-		raise Exception("Expression error.")
+	if i == 0 or i == len(tokens) - 1:
+		raise ParseTokenException(tokens[i])
 
 	a = tokens[:i]
 	b = tokens[i+1:]
 
 	return oper.evalfunc(evaluate(a), evaluate(b))
-	
-	return result
 
 def decode(tokens):
 
@@ -147,9 +163,10 @@ def decode(tokens):
 		text += str(token.value)
 	return text
 
+# Exp ::= Num | ( Exp ) | - Exp | Exp BinOp Exp
 def evaluate(tokens):
 
-	err = Exception("Could not evaluate tokens: ", tokens)
+	err = ParseTokenException(None)
 
 	if len(tokens) == 0:
 		raise err
@@ -168,6 +185,13 @@ def evaluate(tokens):
 		raise err
 
 	return result
+
+def parse(tokens):
+
+	try: return evaluate(tokens)
+	except ParseTokenException as ex:
+		if ex.token == None: expressionInvalid("Could not parse expression", expression, -1)
+		else: 				 expressionInvalid("Could not parse expression", expression, ex.token.position)
 
 def is_num(c):
 	return c >= '0' and c <= '9'
@@ -201,7 +225,7 @@ class Lexer:
 					if c == '.':
 
 						if i >= len(exp) - 1 or not is_num(exp[i + 1]):
-							raise Exception()
+							raise TokenizerException(exp, i)
 
 						numstr += '.'
 
@@ -228,29 +252,40 @@ class Lexer:
 
 				# ignores empty space
 				elif c != ' ' and c != '\t':
-					raise Exception()
+					raise TokenizerException(exp, i)
 
 				if token != None:
+					token.position = i
 					tokens.append(token)
 
 				i += 1
 		
-		except Exception:
-			print ("### Expression error near column", i)
-			print (exp)
-			print (" " * i + "^")
+		except TokenizerException as ex:
+			expressionInvalid("Expression error near column " + str(i), ex.expression, ex.position)
 			return None
 
 		return tokens
+
+def expressionInvalid(title, expression, position):
+	print (expression)
+	if position >= 0:
+		print (" " * position + "^")
 
 if len(sys.argv) != 2:
 	print("USAGE: <EXP>")
 	sys.exit(0)
 
-expressao = sys.argv[1]
-tokens = Lexer.scan(expressao)
+expression = sys.argv[1]
+tokens = Lexer.scan(expression)
 
-if tokens != None:
-	result = evaluate(tokens)
-	print("Resultado: ", result)
+if tokens == None:
+	print("Lexer error.")
+	sys.exit(1)
+
+result = parse(tokens)
+if result == None:
+	print("Parser error.")
+	sys.exit(2)
+
+print(result)
 
